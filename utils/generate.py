@@ -11,11 +11,12 @@ import torch
 from torch import nn
 import numpy as np
 import nltk
-
+import config as cfg
 
 class Generator:
     def __init__(self,
                  file_path: str,
+                 vocab_path: str,
                  vocab_size: int,
                  max_seq_len: int,
                  batch_size: int,
@@ -23,6 +24,7 @@ class Generator:
                  dataset: str,
                  **kwargs):
         self.file_path = os.path.join(file_path, dataset + '.txt')
+        self.vocab_path = vocab_path
         self.dataset = dataset
         self.vocab_size = vocab_size
         self.max_seq_len = max_seq_len
@@ -33,9 +35,8 @@ class Generator:
         self.vocab = self.get_vocab()
 
     def get_vocab(self):
-
-        if os.path.exists('.\\vocab\\{}.json'.format(self.dataset)):
-            f = open('.\\vocab\\{}.json'.format(self.dataset), 'r')
+        if os.path.exists(self.vocab_path + '\\{}.json'.format(self.dataset)):
+            f = open(self.vocab_path + '\\{}.json'.format(self.dataset), 'r')
             dict = json.load(f)
             return dict['vocab']
 
@@ -55,7 +56,7 @@ class Generator:
         sliced_vocab = list(np.array(sorted_total_vocab)[: self.vocab_size])
 
         dict = {'vocab': sliced_vocab}
-        with open('.\\vocab\\{}.json'.format(self.dataset), 'w') as f:
+        with open(self.vocab_path + '\\{}.json'.format(self.dataset), 'w') as f:
             json.dump(dict, f, indent=2)
 
         return sliced_vocab

@@ -8,7 +8,7 @@
 import torch
 
 # ===basic===
-vocab_size = 5000
+vocab_size = 4500
 max_seq_len = 20
 inter_epoch = 10
 ADV_train_epoch = 200
@@ -49,5 +49,6 @@ adv_dis_checkpoint_path = '.\\saved\\adv_discriminator'
 # ===train===
 datapath = 'C:\\DATASET\\nature_language'
 dataset = 'image_coco'
+vocabpath = 'C:\\PythonProjects\\LeakGan\\vocab'
 start_letter = 1
 

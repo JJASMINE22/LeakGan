@@ -13,24 +13,6 @@ from torch import nn
 from leakgan import LeakGan
 from utils.generate import Generator
 
-with open('.\\vocab\\image_coco.json', 'r') as f:
-    dict = json.load(f)
-vocab = dict['vocab']
-
-def decode(samples):
-    decode_mat = []
-    for i, sample in enumerate(samples.numpy()):
-        token = ''
-        for idx in sample:
-            try:
-                token += np.array(vocab)[idx] + ' '
-            except:
-                token += 'UNK '
-        decode_mat.append(token.strip())
-    decode_mat = np.array(decode_mat).reshape([-1, 1])
-
-    return decode_mat
-
 if __name__ == '__main__':
 
     leak_gan = LeakGan(gen_embed_dim=cfg.gen_embed_dim,
@@ -51,11 +33,28 @@ if __name__ == '__main__':
                        device=cfg.device)
 
     data_gen = Generator(file_path=cfg.datapath,
+                         vocab_path=cfg.vocabpath,
                          vocab_size=cfg.vocab_size,
                          max_seq_len=cfg.max_seq_len,
                          batch_size=cfg.batch_size,
                          train_ratio=cfg.train_ratio,
                          dataset=cfg.dataset)
+
+    with open(data_gen.vocab_path + '\\{}.json'.format(data_gen.dataset), 'r') as f:
+        dict = json.load(f)
+    vocab = dict['vocab']
+
+
+    def decode(samples):
+        decode_mat = []
+        for i, sample in enumerate(samples.numpy()):
+            token = ''
+            for idx in sample:
+                token += np.array(vocab)[idx] + ' '
+            decode_mat.append(token.strip())
+        decode_mat = np.array(decode_mat).reshape([-1, 1])
+
+        return decode_mat
 
     # === pretrain ===
     for inter_num in range(cfg.inter_epoch):
