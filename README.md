@@ -17,14 +17,13 @@ nltk==3.7
 tqdm==4.62.3
 
 ## 模型结构
-https://github.com/JJASMINE22/LeakGan/blob/main/structure/model_leakgan.png
+![image](https://github.com/JJASMINE22/LeakGan/blob/main/structure/model_leakgan.png)
 
 ## 注意事项
-参考地址：https://github.com/williamSYSU/TextGAN-PyTorch。
-调换生成器中manage_loss与work_loss的反向传递顺序，否则torch将于当前版本报错
-新增基于HingeLoss的对抗器误差
-数据路径、训练目标等参数均位于config.py，默认使用image_coco数据集
-PyTorch的嵌入层需将整型变量转换为Long型(64位) 
+1. 调换生成器中manage_loss与work_loss的反向传递顺序，否则torch将于当前版本报错
+2. 新增基于HingeLoss的对抗器误差
+3. 数据路径、训练目标等参数均位于config.py，默认使用image_coco数据集
+4. PyTorch的嵌入层需将整型变量转换为Long型(64位) 
 
 ## 文件下载    
 链接：https://pan.baidu.com/s/1SNc7uJ3PMxX6gxLrELfjEQ 
@@ -37,5 +36,4 @@ PyTorch的嵌入层需将整型变量转换为Long型(64位)
 
 ## Reference
 https://github.com/CR-Gjx/LeakGAN
-
 https://github.com/williamSYSU/TextGAN-PyTorch
