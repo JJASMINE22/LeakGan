@@ -51,7 +51,7 @@ class LeakGAN_G(nn.Module):
                                    out_features=goal_size,
                                    bias=False)
 
-        self.goal_init = nn.Parameter(torch.rand((cfg.batch_size, goal_out_size)), requires_grad=False)
+        self.goal_init = torch.randn(size=(cfg.batch_size, goal_out_size), requires_grad=True)
 
         self.init_params()
 
@@ -337,15 +337,6 @@ class LeakGAN_G(nn.Module):
             return h.to(cfg.device), c.to(cfg.device)
         else:
             return h, c
-
-    def init_goal(self, batch_size):
-        goal = torch.rand((batch_size, self.goal_out_size)).normal_(std=0.1)
-        goal = nn.Parameter(goal)
-
-        if cfg.device:
-            return goal.to(cfg.device)
-        else:
-            return goal
 
     def init_params(self):
         for named_param in self.named_parameters():

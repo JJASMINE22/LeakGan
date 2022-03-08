@@ -21,9 +21,11 @@ tqdm==4.62.3
 
 ## 注意事项
 1. 调换生成器中manage_loss与work_loss的反向传递顺序，否则torch将于当前版本报错
-2. 新增基于HingeLoss的对抗器误差
-3. 数据路径、训练目标等参数均位于config.py，默认使用image_coco数据集
-4. PyTorch的嵌入层需将整型变量转换为Long型(64位) 
+2. 新增基于生成器work模块、对抗器权重的l2正则化误差，降低过拟合概率
+3. 新增基于HingeLoss的对抗器误差
+4. 更改基于参考资料[2]的蒙特卡洛补偿计算方法，使其与数据特征能正确匹配
+5. 数据路径、训练目标等参数均位于config.py，默认使用image_coco数据集
+6. PyTorch的嵌入层需将整型变量转换为Long型(64位) 
 
 ## 文件下载    
 链接：https://pan.baidu.com/s/1SNc7uJ3PMxX6gxLrELfjEQ 

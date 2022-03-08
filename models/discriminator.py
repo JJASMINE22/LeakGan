@@ -37,7 +37,7 @@ class CNNDiscriminator(nn.Module):
         self.feature2out = nn.Linear(in_features=self.feature_dim,
                                      out_features=2 if cfg.loss_mode is 'CrossEntropy' else 1)
         self.dropout = nn.Dropout(p=dropout)
-        self.init_params()
+        self.weights = self.init_params()
 
         self.cross_entropy_loss = nn.CrossEntropyLoss()
 
@@ -68,6 +68,8 @@ class CNNDiscriminator(nn.Module):
         return pred
 
     def init_params(self):
+
+        weights = []
         for named_param in self.named_parameters():
             name, param = named_param
             if param.requires_grad:
@@ -77,5 +79,9 @@ class CNNDiscriminator(nn.Module):
                     stddev = 1 / math.sqrt(param.shape[0])
                     if cfg.dis_init == 'uniform':
                         torch.nn.init.uniform_(param, a=-0.05, b=0.05)
+                        weights.append(param)
                     elif cfg.dis_init == 'normal':
                         torch.nn.init.normal_(param, std=stddev)
+                        weights.append(param)
+
+        return weights

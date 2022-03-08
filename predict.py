@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 '''
-@Project ：CNN_LSTM
-@File    ：train.py
+@Project ：LeakGan
+@File    ：predict.py
 @IDE     ：PyCharm 
 @Author  ：XinYi Huang
 '''
@@ -19,6 +19,7 @@ leak_gan = LeakGan(gen_embed_dim=cfg.gen_embed_dim,
                    dis_embed_dim=cfg.dis_embed_dim,
                    filter_sizes=cfg.filter_sizes,
                    num_filters=cfg.num_filters,
+                   Lambda=cfg.Lambda,
                    gen_lr=cfg.gen_lr,
                    dis_lr=cfg.dis_lr,
                    batch_size=cfg.batch_size,
@@ -27,8 +28,8 @@ leak_gan = LeakGan(gen_embed_dim=cfg.gen_embed_dim,
                    padding_idx=cfg.padding_idx,
                    device=cfg.device)
 
-gen_ckpt_path = '.\\saved\\pre_generator\\Epoch080_mana_loss-0.395_work_loss0.946.pth.tar'
-dis_ckpt_path = '.\\saved\\pre_discriminator\\Epoch150_loss0.05363.pth.tar'
+gen_ckpt_path = '.\\saved\\pre_generator\\\\gen目标文件'
+dis_ckpt_path = '.\\saved\\pre_discriminator\\\\dis目标文件'
 gen_ckpt = torch.load(gen_ckpt_path)
 gen_state_dict = gen_ckpt['state_dict']
 leak_gan.gen.load_state_dict(gen_state_dict)

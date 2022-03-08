@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 '''
 @Project ：LeakGan
-@File    ：_utils.py
+@File    ：generate.py
 @IDE     ：PyCharm 
 @Author  ：XinYi Huang
 '''

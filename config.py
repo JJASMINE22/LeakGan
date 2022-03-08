@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 '''
-@Project ：CNN_LSTM
-@File    ：train.py
+@Project ：LeakGan
+@File    ：config.py
 @IDE     ：PyCharm 
 @Author  ：XinYi Huang
 '''
@@ -14,6 +14,7 @@ inter_epoch = 10
 ADV_train_epoch = 200
 batch_size = 64
 train_ratio = 0.7
+Lambda = 5e-4
 padding_idx = None
 ignore_pretrain = False
 device = torch.device('cuda') if torch.cuda.is_available() else None
@@ -51,4 +52,3 @@ datapath = 'C:\\DATASET\\nature_language'
 dataset = 'image_coco'
 vocabpath = 'C:\\PythonProjects\\LeakGan\\vocab'
 start_letter = 1
-

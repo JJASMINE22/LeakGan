@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 '''
-@Project ：CNN_LSTM
-@File    ：train.py
+@Project ：LeakGan
+@File    ：leakgan.py
 @IDE     ：PyCharm 
 @Author  ：XinYi Huang
 '''
@@ -24,6 +24,7 @@ class LeakGan:
                  dis_embed_dim: int,
                  filter_sizes: list,
                  num_filters: list,
+                 Lambda: float,
                  gen_lr: float,
                  dis_lr: float,
                  batch_size: int,
@@ -44,6 +45,7 @@ class LeakGan:
         self.dis_embed_dim = dis_embed_dim
         self.filter_sizes = filter_sizes
         self.num_filters = num_filters
+        self.Lambda = Lambda
         self.gen_lr = gen_lr
         self.dis_lr = dis_lr
         self.batch_size = batch_size
@@ -74,7 +76,10 @@ class LeakGan:
 
         self.rollout_func = rollout.ROLLOUT(self.gen)
 
-        mana_params, work_params = self.split_params()
+        # took weights from generator, preparing for l2 regularize
+        self.mana_weights, self.work_weights = self.split_gen_weights()
+        # splite parameters from generator
+        mana_params, work_params = self.split_gen_params()
         self.mana_opt = torch.optim.Adam(mana_params, lr=self.gen_lr)
         self.work_opt = torch.optim.Adam(work_params, lr=self.gen_lr)
         self.gen_opt = [self.work_opt, self.mana_opt]
@@ -84,7 +89,7 @@ class LeakGan:
         self.pre_mana_loss, self.pre_work_loss, self.adv_mana_loss, self.adv_work_loss = 0, 0, 0, 0
         self.dis_loss, self.dis_acc = 0, 0
 
-    def split_params(self):
+    def split_gen_params(self):
         mana_params = list()
         work_params = list()
 
@@ -99,6 +104,28 @@ class LeakGan:
 
         return mana_params, work_params
 
+    def split_gen_weights(self):
+        """
+        notice:
+        Using '+= layer.weight' to store parameter in a list will cause it to become a gradient var,
+        unless execute '+= list(layer.paramters())' or 'append(layer.weight)'
+        """
+        mana_weights = list()
+        work_weights = list()
+
+        mana_weights.append(self.gen.manager.weight_ih_l0)
+        mana_weights.append(self.gen.manager.weight_hh_l0)
+        mana_weights.append(self.gen.mana2goal.weight)
+        mana_weights.append(self.gen.goal_init)
+
+        work_weights.append(self.gen.embeddings.weight)
+        work_weights.append(self.gen.worker.weight_ih_l0)
+        work_weights.append(self.gen.worker.weight_hh_l0)
+        work_weights.append(self.gen.work2goal.weight)
+        work_weights.append(self.gen.goal2goal.weight)
+
+        return mana_weights, work_weights
+
     def optimize_multi(self, losses):
         for i, (loss, opt) in enumerate(zip(losses, self.gen_opt)):
             opt.zero_grad()
@@ -110,6 +137,10 @@ class LeakGan:
             sources = torch.LongTensor(sources).to(self.device)
 
         mana_loss, work_loss = self.gen.pretrain_loss(sources, self.dis)
+        # l2 regularization
+        for weight in self.work_weights:
+            work_loss += self.Lambda * torch.sum(torch.square(weight))
+        # update parameters
         self.optimize_multi([work_loss, mana_loss])
         self.pre_mana_loss += mana_loss.data.item()
         self.pre_work_loss += work_loss.data.item()
@@ -128,7 +159,9 @@ class LeakGan:
         rewards = self.rollout_func.get_reward_leakgan(target, self.rollout_num, self.dis,
                                                        current_k)  #.cpu() reward with MC search
         mana_loss, work_loss = self.gen.adversarial_loss(target, rewards, self.dis)
-
+        # l2 regularization
+        for weight in self.work_weights:
+            work_loss += self.Lambda * torch.sum(torch.square(weight))
         # update parameters
         self.optimize_multi([work_loss, mana_loss])
         self.adv_mana_loss += mana_loss.data.item()
@@ -152,6 +185,10 @@ class LeakGan:
             torch.cat((torch.ones_like(real_predictions),
                        -torch.ones_like(fake_predictions)), dim=0)
         loss = self.dis.discriminator_loss(predictions, labels)
+        # l2 regularization
+        for weight in self.dis.weights:
+            loss += self.Lambda*torch.sum(torch.square(weight))
+        # update parameters
         self.dis_opt.zero_grad()
         loss.backward(retain_graph=False)
         self.dis_opt.step()

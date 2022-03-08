@@ -1,7 +1,7 @@
 # -*- coding: UTF-8 -*-
 '''
-@Project ：CNN_LSTM
-@File    ：train.py
+@Project ：LeakGan
+@File    ：rollout.py
 @IDE     ：PyCharm 
 @Author  ：XinYi Huang
 '''
@@ -59,7 +59,7 @@ class ROLLOUT:
         work_hidden = self.gen.init_hidden(batch_size)
         mana_hidden = self.gen.init_hidden(batch_size)
         real_goal = self.gen.goal_init[:batch_size, :]
-        out = 0
+        # out = 0
 
         if cfg.device:
             goal_array = goal_array.to(cfg.device)
@@ -141,11 +141,14 @@ class ROLLOUT:
                     given_num = t * self.step_size + 1  # 1, 5, 9, ..
                     samples = self.rollout_mc_search_leakgan(sentences, discriminator, given_num)
                     out = discriminator(samples)
-                    out = torch.softmax(out, dim=-1)
+                    out = torch.softmax(out, dim=-1) if cfg.loss_mode == 'CrossEntropy' else torch.sigmoid(out)  # or relu
                     reward = out[:, current_k+1] if cfg.loss_mode is 'CrossEntropy' else out[:, current_k]
                     rewards[idx] = reward
                     idx += 1
 
-        rewards = rewards.view(batch_size, self.max_seq_len // self.step_size, rollout_num)
-        rewards = torch.mean(rewards, dim=-1)
+        # rewards = rewards.view(batch_size, self.max_seq_len // self.step_size, rollout_num)
+        # rewards = torch.mean(rewards, dim=-1)
+        rewards = rewards.view(rollout_num, self.max_seq_len//self.step_size, batch_size)
+        rewards = rewards.mean(dim=0).permute([1, 0])
+
         return rewards
